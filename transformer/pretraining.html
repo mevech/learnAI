@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Pre-training Steps</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            line-height: 1.6;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .step {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin: 25px 0;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 6px solid #4CAF50;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .step:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        }
+        
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .step-number {
+            background: #fff;
+            color: #667eea;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .step-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin: 0;
+        }
+        
+        .algorithm-box {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            border-left: 4px solid #ffeb3b;
+        }
+        
+        .algorithm-title {
+            font-weight: bold;
+            color: #ffeb3b;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .flowchart {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            color: #333;
+            border: 2px solid #e9ecef;
+        }
+        
+        .flow-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            margin: 10px auto;
+            border-radius: 8px;
+            max-width: 300px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .flow-arrow {
+            font-size: 2em;
+            color: #667eea;
+            margin: 10px 0;
+        }
+        
+        .details {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .math-formula {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 6px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: 'Times New Roman', serif;
+            text-align: center;
+            font-size: 1.1em;
+        }
+        
+        .highlight {
+            background: #ffeb3b;
+            color: #333;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        
+        .phase-indicator {
+            display: inline-block;
+            background: #ff6b6b;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .overview-flowchart {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .flow-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .flow-step {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .flow-step:hover {
+            transform: scale(1.05);
+        }
+        
+        .complexity-note {
+            background: #e74c3c;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 5px solid #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧠 LLM Pre-training: Complete Process</h1>
+        
+        <div class="overview-flowchart">
+            <h2>🔄 High-Level Pre-training Pipeline</h2>
+            <div class="flow-grid">
+                <div class="flow-step">
+                    <strong>📚 Data Collection</strong><br>
+                    Scrape & curate<br>
+                    trillions of tokens
+                </div>
+                <div class="flow-step">
+                    <strong>🔧 Preprocessing</strong><br>
+                    Clean, tokenize,<br>
+                    create batches
+                </div>
+                <div class="flow-step">
+                    <strong>🏗️ Model Setup</strong><br>
+                    Initialize weights,<br>
+                    define architecture
+                </div>
+                <div class="flow-step">
+                    <strong>🎯 Training Loop</strong><br>
+                    Forward → Loss →<br>
+                    Backward → Update
+                </div>
+                <div class="flow-step">
+                    <strong>📊 Monitoring</strong><br>
+                    Track loss, perplexity,<br>
+                    save checkpoints
+                </div>
+                <div class="flow-step">
+                    <strong>✅ Evaluation</strong><br>
+                    Test on benchmarks,<br>
+                    validate performance
+                </div>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-header">
+                <div class="step-number">1</div>
+                <h2 class="step-title">Data Collection & Curation</h2>
+            </div>
+            <div class="phase-indicator">PREPARATION PHASE</div>
+            
+            <div class="algorithm-box">
+                <div class="algorithm-title">🔍 Algorithm: Web Crawling & Filtering</div>
+                <pre>
+FOR each_website IN internet:
+    raw_text = crawl(website)
+    IF quality_score(raw_text) > threshold:
+        filtered_data.append(raw_text)
+    
+FOR each_document IN filtered_data:
+    IF language_detect(document) == target_language:
+        IF not duplicate(document):
+            IF content_filter(document) == "safe":
+                training_corpus.add(document)
+                </pre>
+            </div>
+            
+            <div class="details">
+                <strong>🎯 Goal:</strong> Collect diverse, high-quality text representing human knowledge<br>
+                <strong>📊 Scale:</strong> 1-10 trillion tokens (1 token ≈ 0.75 words)<br>
+                <strong>🔍 Sources:</strong> Web pages, books, academic papers, news, forums<br>
+                <strong>⚡ Challenges:</strong> Deduplication, quality filtering, bias mitigation
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-header">
+                <div class="step-number">2</div>
+                <h2 class="step-title">Tokenization & Preprocessing</h2>
+            </div>
+            <div class="phase-indicator">PREPARATION PHASE</div>
+            
+            <div class="algorithm-box">
+                <div class="algorithm-title">🔧 Algorithm: Byte-Pair Encoding (BPE)</div>
+                <pre>
+// Train tokenizer
+vocabulary = initialize_with_characters()
+WHILE vocabulary_size < target_size:
+    pair_counts = count_adjacent_pairs(corpus)
+    most_frequent_pair = max(pair_counts)
+    vocabulary.add(merge(most_frequent_pair))
+    corpus = apply_merge(corpus, most_frequent_pair)
+
+// Apply to training data
+FOR each_text IN training_corpus:
+    tokens = tokenize(text, vocabulary)
+    token_ids = convert_to_ids(tokens)
+    training_data.append(token_ids)
+                </pre>
+            </div>
+            
+            <div class="details">
+                <strong>🎯 Goal:</strong> Convert text to numerical sequences the model can process<br>
+                <strong>📊 Vocabulary Size:</strong> 50,000-100,000 tokens<br>
+                <strong>🔤 Example:</strong> "Hello world" → [15496, 995] → model input<br>
+                <strong>⚡ Key Insight:</strong> Subword tokenization balances vocabulary size vs coverage
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-header">
+                <div class="step-number">3</div>
+                <h2 class="step-title">Model Architecture Definition</h2>
+            </div>
+            <div class="phase-indicator">SETUP PHASE</div>
+            
+            <div class="algorithm-box">
+                <div class="algorithm-title">🏗️ Algorithm: Transformer Architecture</div>
+                <pre>
+class TransformerLM:
+    def __init__(self, vocab_size, d_model, n_layers, n_heads):
+        self.embedding = Embedding(vocab_size, d_model)
+        self.position_encoding = PositionalEncoding(d_model)
+        self.layers = [TransformerBlock(d_model, n_heads) 
+                      for _ in range(n_layers)]
+        self.output_projection = Linear(d_model, vocab_size)
+    
+    def forward(self, tokens):
+        x = self.embedding(tokens) + self.position_encoding
+        for layer in self.layers:
+            x = layer.attention(x) + layer.feedforward(x)
+        return self.output_projection(x)
+                </pre>
+            </div>
+            
+            <div class="details">
+                <strong>🎯 Goal:</strong> Define neural network architecture for language modeling<br>
+                <strong>📊 Scale:</strong> 7B-175B+ parameters (GPT-3.5: ~175B, GPT-4: estimated 1.7T)<br>
+                <strong>🧠 Key Components:</strong> Self-attention, feed-forward networks, layer normalization<br>
+                <strong>⚡ Innovation:</strong> Attention mechanism allows modeling long-range dependencies
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-header">
+                <div class="step-number">4</div>
+                <h2 class="step-title">Weight Initialization</h2>
+            </div>
+            <div class="phase-indicator">SETUP PHASE</div>
+            
+            <div class="algorithm-box">
+                <div class="algorithm-title">🎲 Algorithm: Xavier/He Initialization</div>
+                <pre>
+FOR each_layer IN model.layers:
+    IF layer.type == "linear":
+        fan_in = layer.input_size
+        fan_out = layer.output_size
+        std = sqrt(2.0 / (fan_in + fan_out))  // Xavier
+        layer.weights = random_normal(0, std)
+        layer.bias = zeros()
+    
+    ELIF layer.type == "embedding":
+        layer.weights = random_normal(0, 0.1)
+                </pre>
+            </div>
+            
+            <div class="math-formula">
+                <strong>Xavier Init:</strong> W ~ N(0, √(2/(fan_in + fan_out)))
+            </div>
+            
+            <div class="details">
+                <strong>🎯 Goal:</strong> Start training with weights that enable stable gradient flow<br>
+                <strong>📊 Critical:</strong> Poor initialization can prevent learning entirely<br>
+                <strong>⚡ Principle:</strong> Maintain activation variance across layers
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-header">
+                <div class="step-number">5</div>
+                <h2 class="step-title">Training Loop Setup</h2>
+            </div>
+            <div class="phase-indicator">TRAINING PHASE</div>
+            
+            <div class="algorithm-box">
+                <div class="algorithm-title">⚙️ Algorithm: Training Configuration</div>
+                <pre>
+optimizer = AdamW(model.parameters(), 
+                  lr=3e-4, 
+                  weight_decay=0.1,
+                  betas=(0.9, 0.95))
+
+scheduler = CosineAnnealingLR(optimizer, 
+                              T_max=training_steps,
+                              eta_min=1e-5)
+
+loss_function = CrossEntropyLoss(ignore_index=pad_token)
+batch_size = 2048  // tokens per batch
+gradient_accumulation_steps = 8
+                </pre>
+            </div>
+            
+            <div class="details">
+                <strong>🎯 Goal:</strong> Configure optimization for stable, efficient learning<br>
+                <strong>📊 Batch Size:</strong> 1M-4M tokens per update (across multiple GPUs)<br>
+                <strong>⚡ Learning Rate:</strong> Starts ~3e-4, decays with cosine schedule
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-header">
+                <div class="step-number">6</div>
+                <h2 class="step-title">Forward Pass</h2>
+            </div>
+            <div class="phase-indicator">TRAINING PHASE</div>
+            
+            <div class="algorithm-box">
+                <div class="algorithm-title">➡️ Algorithm: Forward Propagation</div>
+                <pre>
+FOR each_batch IN training_data:
+    input_ids = batch.tokens[:-1]     // "The cat sat"
+    target_ids = batch.tokens[1:]     // "cat sat on"
+    
+    // Forward pass through model
+    embeddings = embedding_layer(input_ids)
+    hidden_states = embeddings
+    
+    FOR each_transformer_layer IN model.layers:
+        attention_output = self_attention(hidden_states)
+        hidden_states = layer_norm(hidden_states + attention_output)
+        
+        ffn_output = feed_forward(hidden_states)
+        hidden_states = layer_norm(hidden_states + ffn_output)
+    
+    logits = output_projection(hidden_states)
+    loss = cross_entropy(logits, target_ids)
+                </pre>
+            </div>
+            
+            <div class="math-formula">
+                <strong>Attention:</strong> Attention(Q,K,V) = softmax(QK^T/√d_k)V
+            </div>
+            
+            <div class="details">
+                <strong>🎯 Goal:</strong> Compute predictions and loss for next-token prediction<br>
+                <strong>📊 Objective:</strong> Maximize P(next_token | previous_tokens)<br>
+                <strong>⚡ Key:</strong> Causal masking ensures model only sees past tokens
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-header">
+                <div class="step-number">7</div>
+                <h2 class="step-title">Backward Pass (Backpropagation)</h2>
+            </div>
+            <div class="phase-indicator">TRAINING PHASE</div>
+            
+            <div class="algorithm-box">
+                <div class="algorithm-title">⬅️ Algorithm: Gradient Computation</div>
+                <pre>
+// Compute gradients via automatic differentiation
+loss.backward()
+
+// Apply gradient clipping
+total_norm = 0
+FOR each_parameter IN model.parameters():
+    param_norm = parameter.grad.norm()
+    total_norm += param_norm ** 2
+total_norm = sqrt(total_norm)
+
+clip_coef = max_grad_norm / (total_norm + 1e-6)
+IF clip_coef < 1:
+    FOR each_parameter IN model.parameters():
+        parameter.grad *= clip_coef
+                </pre>
+            </div>
+            
+            <div class="math-formula">
+                <strong>Chain Rule:</strong> ∂L/∂W_i = ∂L/∂y × ∂y/∂W_i
+            </div>
+            
+            <div class="details">
+                <strong>🎯 Goal:</strong> Compute how much each weight should change to reduce loss<br>
+                <strong>📊 Gradient Clipping:</strong> Prevent exploding gradients (max norm = 1.0)<br>
+                <strong>⚡ Challenge:</strong> Gradients must flow through 50+ layers without vanishing
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-header">
+                <div class="step-number">8</div>
+                <h2 class="step-title">Parameter Updates</h2>
+            </div>
+            <div class="phase-indicator">TRAINING PHASE</div>
+            
+            <div class="algorithm-box">
+                <div class="algorithm-title">🔄 Algorithm: AdamW Optimizer</div>
+                <pre>
+FOR each_parameter IN model.parameters():
+    grad = parameter.gradient
+    
+    // Update biased first moment estimate
+    m = beta1 * m + (1 - beta1) * grad
+    
+    // Update biased second moment estimate  
+    v = beta2 * v + (1 - beta2) * grad²
+    
+    // Compute bias-corrected estimates
+    m_hat = m / (1 - beta1^t)
+    v_hat = v / (1 - beta2^t)
+    
+    // Apply weight decay
+    parameter = parameter * (1 - lr * weight_decay)
+    
+    // Update parameter
+    parameter = parameter - lr * m_hat / (sqrt(v_hat) + epsilon)
+                </pre>
+            </div>
+            
+            <div class="details">
+                <strong>🎯 Goal:</strong> Update weights using adaptive learning rates<br>
+                <strong>📊 AdamW:</strong> Combines momentum + adaptive learning + weight decay<br>
+                <strong>⚡ Benefit:</strong> Handles sparse gradients and different parameter scales
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-header">
+                <div class="step-number">9</div>
+                <h2 class="step-title">Learning Rate Scheduling</h2>
+            </div>
+            <div class="phase-indicator">TRAINING PHASE</div>
+            
+            <div class="algorithm-box">
+                <div class="algorithm-title">📈 Algorithm: Cosine Annealing</div>
+                <pre>
+def cosine_annealing_lr(step, total_steps, lr_max, lr_min):
+    IF step < warmup_steps:
+        // Linear warmup
+        return lr_max * (step / warmup_steps)
+    ELSE:
+        // Cosine decay
+        progress = (step - warmup_steps) / (total_steps - warmup_steps)
+        return lr_min + (lr_max - lr_min) * 0.5 * (1 + cos(π * progress))
+
+current_lr = cosine_annealing_lr(global_step, total_steps, 3e-4, 1e-5)
+optimizer.set_learning_rate(current_lr)
+                </pre>
+            </div>
+            
+            <div class="details">
+                <strong>🎯 Goal:</strong> Adjust learning rate for optimal training dynamics<br>
+                <strong>📊 Pattern:</strong> Warmup (0→max) → Cosine decay (max→min)<br>
+                <strong>⚡ Benefit:</strong> Fast early learning, stable convergence later
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-header">
+                <div class="step-number">10</div>
+                <h2 class="step-title">Monitoring & Evaluation</h2>
+            </div>
+            <div class="phase-indicator">VALIDATION PHASE</div>
+            
+            <div class="algorithm-box">
+                <div class="algorithm-title">📊 Algorithm: Progress Tracking</div>
+                <pre>
+IF step % eval_interval == 0:
+    model.eval()
+    total_loss = 0
+    
+    FOR each_batch IN validation_data:
+        WITH torch.no_grad():
+            logits = model(batch.input_ids)
+            loss = cross_entropy(logits, batch.target_ids)
+            total_loss += loss
+    
+    perplexity = exp(total_loss / num_batches)
+    
+    // Log metrics
+    logger.log({
+        "step": step,
+        "train_loss": train_loss,
+        "val_loss": val_loss,
+        "perplexity": perplexity,
+        "learning_rate": current_lr
+    })
+    
+    // Save checkpoint
+    IF val_loss < best_val_loss:
+        save_checkpoint(model, optimizer, step)
+                </pre>
+            </div>
+            
+            <div class="math-formula">
+                <strong>Perplexity:</strong> PPL = e^(loss) = 2^(H(P,Q))
+            </div>
+            
+            <div class="details">
+                <strong>🎯 Goal:</strong> Track training progress and detect issues early<br>
+                <strong>📊 Key Metrics:</strong> Loss, perplexity, learning rate, gradient norms<br>
+                <strong>⚡ Perplexity:</strong> Measures how "surprised" model is by text (lower = better)
+            </div>
+        </div>
+
+        <div class="flowchart">
+            <h2>🔄 Complete Training Loop Flowchart</h2>
+            
+            <div class="flow-box">🚀 Initialize Model & Optimizer</div>
+            <div class="flow-arrow">⬇️</div>
+            
+            <div class="flow-box">📚 Load Training Batch</div>
+            <div class="flow-arrow">⬇️</div>
+            
+            <div class="flow-box">➡️ Forward Pass<br>(Compute Predictions & Loss)</div>
+            <div class="flow-arrow">⬇️</div>
+            
+            <div class="flow-box">⬅️ Backward Pass<br>(Compute Gradients)</div>
+            <div class="flow-arrow">⬇️</div>
+            
+            <div class="flow-box">✂️ Gradient Clipping</div>
+            <div class="flow-arrow">⬇️</div>
+            
+            <div class="flow-box">🔄 Update Parameters<br>(AdamW Step)</div>
+            <div class="flow-arrow">⬇️</div>
+            
+            <div class="flow-box">📈 Update Learning Rate</div>
+            <div class="flow-arrow">⬇️</div>
+            
+            <div class="flow-box">❓ Evaluation Time?</div>
+            <div class="flow-arrow">⬇️</div>
+            
+            <div class="flow-box">📊 Log Metrics & Save Checkpoint</div>
+            <div class="flow-arrow">⬇️</div>
+            
+            <div class="flow-box">🔚 Training Complete?<br>If No: Back to Load Batch</div>
+        </div>
+
+        <div class="complexity-note">
+            <strong>⚠️ Scale & Complexity:</strong><br>
+            • <span class="highlight">Duration:</span> 2-6 months continuous training<br>
+            • <span class="highlight">Hardware:</span> 1000s of GPUs/TPUs in parallel<br>
+            • <span class="highlight">Data:</span> Process each token only once (no repetition)<br>
+            • <span class="highlight">Cost:</span> $2M-$25M+ for largest models<br>
+            • <span class="highlight">Iterations:</span> 1-5 trillion tokens seen during training
+        </div>
+    </div>
+</body>
+</html>
