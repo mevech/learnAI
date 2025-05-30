@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Math Operations Demo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
+    <style>
+        body {
+            font-family: 'Monaco', 'Consolas', monospace;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+        .section {
+            background: #2d2d2d;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+        .matrix {
+            font-family: monospace;
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        .highlight {
+            background: #3d5afe;
+            color: white;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        .step {
+            background: #424242;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 3px solid #ff9800;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .vocab {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .token {
+            background: #3f3f3f;
+            padding: 8px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .result {
+            background: #1a3d1a;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧠 LLM Math Operations: "The cat sat"</h1>
+    
+    <div class="section">
+        <h2>1. Vocabulary & Tokenization</h2>
+        <p>Our mini vocabulary (normally 50k+ tokens):</p>
+        <div class="vocab">
+            <div class="token">0: [PAD]</div>
+            <div class="token">1: The</div>
+            <div class="token">2: cat</div>
+            <div class="token">3: sat</div>
+            <div class="token">4: on</div>
+            <div class="token">5: mat</div>
+        </div>
+        <p><strong>Input:</strong> "The cat sat" → <span class="highlight">[1, 2, 3]</span></p>
+    </div>
+
+    <div class="section">
+        <h2>2. Embeddings (Token → Vector)</h2>
+        <p>Each token becomes a vector (simplified to 4D, real models use 768-4096D):</p>
+        <div class="matrix" id="embeddings">
+            <!-- Will be populated by JavaScript -->
+        </div>
+        <button onclick="showEmbeddings()">Generate Embeddings</button>
+        <div id="embedding-result"></div>
+    </div>
+
+    <div class="section">
+        <h2>3. Attention Mechanism</h2>
+        <p>For each position, we compute Query, Key, Value vectors:</p>
+        <button onclick="computeAttention()">Compute Attention</button>
+        <div id="attention-setup"></div>
+        
+        <div class="step">
+            <h3>Step 1: Q·K^T (Query-Key dot products)</h3>
+            <div id="qk-matrix"></div>
+        </div>
+        
+        <div class="step">
+            <h3>Step 2: Scale by √d_k</h3>
+            <div id="scaled-matrix"></div>
+        </div>
+        
+        <div class="step">
+            <h3>Step 3: Softmax (attention weights)</h3>
+            <div id="softmax-matrix"></div>
+        </div>
+        
+        <div class="step">
+            <h3>Step 4: Attention × Values</h3>
+            <div id="attention-output"></div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>4. Next Token Prediction</h2>
+        <p>Final layer produces logits for each possible next token:</p>
+        <button onclick="predictNext()">Predict Next Token</button>
+        <div id="prediction-result"></div>
+        
+        <div class="step">
+            <h3>Softmax → Probabilities</h3>
+            <div id="final-probs"></div>
+        </div>
+    </div>
+
+    <script>
+        // Simple embedding matrix (normally learned during training)
+        const embeddings = [
+            [0.0, 0.0, 0.0, 0.0],      // [PAD]
+            [0.2, -0.1, 0.5, 0.3],     // The
+            [0.8, 0.2, -0.3, 0.1],     // cat
+            [-0.1, 0.6, 0.4, -0.2],    // sat
+            [0.3, -0.4, 0.1, 0.7],     // on
+            [0.1, 0.3, -0.6, 0.2]      // mat
+        ];
+
+        const tokens = [1, 2, 3]; // "The cat sat"
+        let tokenEmbeddings = [];
+
+        function matrixToString(matrix, precision = 3) {
+            return matrix.map(row => 
+                '[' + row.map(val => val.toFixed(precision).padStart(7)).join(', ') + ']'
+            ).join('\n');
+        }
+
+        function vectorToString(vector, precision = 3) {
+            return '[' + vector.map(val => val.toFixed(precision).padStart(7)).join(', ') + ']';
+        }
+
+        function showEmbeddings() {
+            const embeddingDiv = document.getElementById('embeddings');
+            let html = '<strong>Embedding Matrix:</strong>\n';
+            
+            embeddings.forEach((emb, i) => {
+                const tokenName = ['PAD', 'The', 'cat', 'sat', 'on', 'mat'][i];
+                html += `${i}: ${tokenName.padEnd(4)} → ${vectorToString(emb)}\n`;
+            });
+            
+            embeddingDiv.innerHTML = html;
+            
+            // Get embeddings for our tokens
+            tokenEmbeddings = tokens.map(t => embeddings[t]);
+            
+            const resultDiv = document.getElementById('embedding-result');
+            resultDiv.innerHTML = `
+                <div class="result">
+                    <strong>Our sentence embeddings:</strong><br>
+                    "The" → ${vectorToString(tokenEmbeddings[0])}<br>
+                    "cat" → ${vectorToString(tokenEmbeddings[1])}<br>
+                    "sat" → ${vectorToString(tokenEmbeddings[2])}
+                </div>
+            `;
+        }
+
+        function computeAttention() {
+            if (tokenEmbeddings.length === 0) {
+                showEmbeddings();
+            }
+
+            // Simple linear transformations (normally learned weights)
+            const Wq = [[0.5, -0.2, 0.1, 0.3], [0.2, 0.4, -0.1, 0.2], [0.1, 0.3, 0.5, -0.1], [-0.2, 0.1, 0.2, 0.4]];
+            const Wk = [[0.3, 0.1, -0.2, 0.4], [-0.1, 0.5, 0.2, 0.1], [0.4, -0.1, 0.3, 0.2], [0.2, 0.3, -0.1, 0.5]];
+            const Wv = [[0.1, 0.4, 0.2, -0.1], [0.3, -0.2, 0.5, 0.1], [-0.1, 0.1, 0.3, 0.4], [0.2, 0.5, -0.2, 0.3]];
+
+            // Compute Q, K, V
+            const Q = tokenEmbeddings.map(emb => math.multiply(Wq, emb));
+            const K = tokenEmbeddings.map(emb => math.multiply(Wk, emb));
+            const V = tokenEmbeddings.map(emb => math.multiply(Wv, emb));
+
+            document.getElementById('attention-setup').innerHTML = `
+                <div class="result">
+                    <strong>Query vectors:</strong><br>
+                    ${Q.map((q, i) => `Q${i}: ${vectorToString(q)}`).join('<br>')}<br><br>
+                    <strong>Key vectors:</strong><br>
+                    ${K.map((k, i) => `K${i}: ${vectorToString(k)}`).join('<br>')}<br><br>
+                    <strong>Value vectors:</strong><br>
+                    ${V.map((v, i) => `V${i}: ${vectorToString(v)}`).join('<br>')}
+                </div>
+            `;
+
+            // Step 1: Q·K^T
+            const QK = [];
+            for (let i = 0; i < Q.length; i++) {
+                QK[i] = [];
+                for (let j = 0; j < K.length; j++) {
+                    QK[i][j] = math.dot(Q[i], K[j]);
+                }
+            }
+
+            document.getElementById('qk-matrix').innerHTML = `
+                <div class="matrix">
+                    <strong>Q·K^T scores:</strong><br>
+                    ${matrixToString(QK)}
+                </div>
+            `;
+
+            // Step 2: Scale
+            const dk = Math.sqrt(4); // dimension of keys
+            const scaledQK = QK.map(row => row.map(val => val / dk));
+
+            document.getElementById('scaled-matrix').innerHTML = `
+                <div class="matrix">
+                    <strong>Scaled by √${4} = ${dk.toFixed(2)}:</strong><br>
+                    ${matrixToString(scaledQK)}
+                </div>
+            `;
+
+            // Step 3: Softmax
+            function softmax(arr) {
+                const maxVal = Math.max(...arr);
+                const exp = arr.map(x => Math.exp(x - maxVal));
+                const sum = exp.reduce((a, b) => a + b, 0);
+                return exp.map(x => x / sum);
+            }
+
+            const attentionWeights = scaledQK.map(row => softmax(row));
+
+            document.getElementById('softmax-matrix').innerHTML = `
+                <div class="matrix">
+                    <strong>Attention weights (each row sums to 1):</strong><br>
+                    ${matrixToString(attentionWeights)}
+                </div>
+            `;
+
+            // Step 4: Attention × Values
+            const attentionOutput = [];
+            for (let i = 0; i < attentionWeights.length; i++) {
+                const output = [0, 0, 0, 0];
+                for (let j = 0; j < V.length; j++) {
+                    for (let k = 0; k < 4; k++) {
+                        output[k] += attentionWeights[i][j] * V[j][k];
+                    }
+                }
+                attentionOutput.push(output);
+            }
+
+            document.getElementById('attention-output').innerHTML = `
+                <div class="result">
+                    <strong>Final attention output:</strong><br>
+                    ${attentionOutput.map((out, i) => `Position ${i}: ${vectorToString(out)}`).join('<br>')}
+                </div>
+            `;
+
+            // Store for next prediction
+            window.finalHidden = attentionOutput[attentionOutput.length - 1]; // Last position
+        }
+
+        function predictNext() {
+            if (!window.finalHidden) {
+                computeAttention();
+            }
+
+            // Output layer weights (maps hidden dim to vocab size)
+            const Wo = [
+                [0.1, -0.5, 0.8, 0.2],    // [PAD]
+                [-0.3, 0.4, -0.1, 0.6],   // The
+                [0.7, -0.2, 0.3, -0.4],   // cat
+                [-0.6, 0.8, 0.1, 0.2],    // sat
+                [0.9, 0.1, -0.7, 0.3],    // on
+                [0.2, 0.6, 0.4, -0.8]     // mat
+            ];
+
+            // Compute logits
+            const logits = Wo.map(w => math.dot(w, window.finalHidden));
+
+            document.getElementById('prediction-result').innerHTML = `
+                <div class="result">
+                    <strong>Raw logits (before softmax):</strong><br>
+                    ${['[PAD]', 'The', 'cat', 'sat', 'on', 'mat'].map((token, i) => 
+                        `${token.padEnd(5)}: ${logits[i].toFixed(3)}`
+                    ).join('<br>')}
+                </div>
+            `;
+
+            // Final softmax
+            function softmax(arr) {
+                const maxVal = Math.max(...arr);
+                const exp = arr.map(x => Math.exp(x - maxVal));
+                const sum = exp.reduce((a, b) => a + b, 0);
+                return exp.map(x => x / sum);
+            }
+
+            const probs = softmax(logits);
+            const maxIdx = probs.indexOf(Math.max(...probs));
+
+            document.getElementById('final-probs').innerHTML = `
+                <div class="result">
+                    <strong>Final probabilities:</strong><br>
+                    ${['[PAD]', 'The', 'cat', 'sat', 'on', 'mat'].map((token, i) => 
+                        `${token.padEnd(5)}: ${(probs[i] * 100).toFixed(1)}%${i === maxIdx ? ' ← PREDICTED' : ''}`
+                    ).join('<br>')}<br><br>
+                    <span class="highlight">Next predicted token: "${['[PAD]', 'The', 'cat', 'sat', 'on', 'mat'][maxIdx]}"</span>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
