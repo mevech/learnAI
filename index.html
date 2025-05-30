@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nothing To See Here</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #ffcc80; /* Light Orange background */
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', sans-serif;
+            overflow: hidden; /* Hide scrollbars if any */
+            color: #333;
+        }
+
+        .penguin-container {
+            position: relative;
+            text-align: center;
+        }
+
+        .penguin {
+            font-size: 100px; /* Adjust size as needed */
+            display: inline-block; /* Important for transform */
+            animation: jump 0.8s infinite ease-in-out;
+            user-select: none; /* Prevent text selection of penguin */
+        }
+
+        @keyframes jump {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-40px); /* How high the penguin jumps */
+            }
+        }
+
+        .speech-bubble {
+            position: absolute;
+            background-color: white;
+            color: #333;
+            padding: 15px 20px;
+            border-radius: 15px;
+            box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
+            bottom: 130px; /* Position above the penguin, adjust based on penguin size */
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap; /* Keep message on one line */
+            font-size: 18px;
+            opacity: 0; /* Start hidden */
+            animation: fadeInSpeech 0.5s 0.5s forwards; /* Fade in after a slight delay */
+        }
+
+        .speech-bubble::after { /* The little tail of the bubble */
+            content: '';
+            position: absolute;
+            bottom: -10px; /* Points downwards */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid white; /* Color of the bubble */
+        }
+
+        @keyframes fadeInSpeech {
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Optional: A little ground shadow for the penguin */
+        .penguin-container::before {
+            content: '';
+            position: absolute;
+            bottom: -5px; /* Under the penguin's default position */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px; /* Shadow width */
+            height: 10px; /* Shadow height */
+            background-color: rgba(0, 0, 0, 0.15);
+            border-radius: 50%;
+            z-index: -1; /* Behind the penguin */
+            animation: shadowSquish 0.8s infinite ease-in-out;
+        }
+
+        @keyframes shadowSquish {
+            0%, 100% {
+                transform: translateX(-50%) scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: translateX(-50%) scale(0.8); /* Shadow gets smaller when penguin is up */
+                opacity: 0.7;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="penguin-container">
+        <div class="penguin">🐧</div>
+        <div class="speech-bubble">
+            There is nothing to see here, move on.
+        </div>
+    </div>
+
+</body>
+</html>
